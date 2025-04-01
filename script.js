@@ -22,20 +22,20 @@ async function startSpeedTest() {
 // Test download speed
 async function testDownloadSpeed() {
     let startTime = performance.now();
-    let testFile = "https://speed.hetzner.de/10MB.bin"; // Test file for speed
+    let testFile = "https://speed.hetzner.de/10MB.bin";
     await fetch(testFile);
     let endTime = performance.now();
 
-    let duration = (endTime - startTime) / 1000; // Convert to seconds
-    let fileSizeMB = 10; // File size in MB
-    let speedMbps = (fileSizeMB / duration) * 8; // Convert MB/s to Mbps
+    let duration = (endTime - startTime) / 1000;
+    let fileSizeMB = 10;
+    let speedMbps = (fileSizeMB / duration) * 8;
     return speedMbps.toFixed(2);
 }
 
 // Test upload speed
 async function testUploadSpeed() {
     let startTime = performance.now();
-    let data = new Uint8Array(1e6); // 1MB dummy data
+    let data = new Uint8Array(1e6);
     await fetch("https://speed.hetzner.de/upload.php", {
         method: "POST",
         body: data
@@ -68,7 +68,7 @@ async function getISPAndLocation() {
     }
 }
 
-// Share button functionality
+// Share results
 document.getElementById("shareBtn").addEventListener("click", () => {
     let download = document.getElementById("download-speed").textContent;
     let upload = document.getElementById("upload-speed").textContent;
