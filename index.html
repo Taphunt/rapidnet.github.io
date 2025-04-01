@@ -3,37 +3,165 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rapid Net - Speed Test</title>
-    <link rel="stylesheet" href="styles.css">
-    <link href="https://fonts.googleapis.com/css2?family=Codystar&display=swap" rel="stylesheet">
+    <title>Speed Test</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            text-align: center;
+            background: linear-gradient(to right, #141e30, #243b55);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+            position: relative;
+            margin: 0;
+        }
+        .animated-bg {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: -1;
+            overflow: hidden;
+        }
+        .circle {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            animation: moveCircles 10s infinite alternate ease-in-out;
+        }
+        .circle.small { width: 100px; height: 100px; top: 10%; left: 20%; }
+        .circle.medium { width: 200px; height: 200px; bottom: 20%; right: 10%; }
+        .circle.large { width: 300px; height: 300px; top: 40%; left: 50%; transform: translateX(-50%); }
+        
+        @keyframes moveCircles {
+            0% { transform: translateY(0px); }
+            100% { transform: translateY(30px); }
+        }
+        
+        .title {
+            font-size: 24px;
+            font-weight: bold;
+            color: #00e676;
+            margin-bottom: 20px;
+        }
+        .container {
+            width: 90%;
+            max-width: 400px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            position: relative;
+            z-index: 2;
+            text-align: center;
+        }
+        button {
+            padding: 12px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border: none;
+            background-color: #00e676;
+            color: white;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            background-color: rgba(255, 255, 255, 0.3);
+            margin-top: 10px;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        .progress {
+            height: 100%;
+            width: 0;
+            background-color: #00e676;
+            transition: width 0.3s;
+        }
+        .info {
+            margin-top: 15px;
+            font-size: 14px;
+            color: white;
+        }
+        .social-icons {
+            margin-top: 20px;
+        }
+        .social-icons a {
+            margin: 0 10px;
+            color: white;
+            font-size: 20px;
+            text-decoration: none;
+        }
+        @media (max-width: 600px) {
+            .container {
+                width: 95%;
+            }
+        }
+    </style>
 </head>
 <body>
+    <div class="animated-bg">
+        <div class="circle small"></div>
+        <div class="circle medium"></div>
+        <div class="circle large"></div>
+    </div>
+    
+    <div class="title">Internet Speed Test</div>
+    
     <div class="container">
-        <h1 class="title">Rapid Net Speed Test</h1>
-        <div class="speed-test">
-            <div class="circle" id="download">
-                <h2>Download</h2>
-                <p id="download-speed">0 Mbps</p>
-            </div>
-            <div class="circle" id="upload">
-                <h2>Upload</h2>
-                <p id="upload-speed">0 Mbps</p>
-            </div>
-            <div class="circle" id="ping">
-                <h2>Ping</h2>
-                <p id="ping-speed">0 ms</p>
-            </div>
-        </div>
-        <button onclick="startSpeedTest()">Start Test</button>
-        <p id="isp-info"></p>
-        <p id="country-info"></p>
-        <button id="shareBtn">Share Results</button>
+        <button onclick="startTest()">Start Test</button>
+        <div id="isp" class="info"></div>
+        <div id="country" class="info"></div>
+        <div id="result"></div>
+        <div class="progress-bar"><div class="progress" id="progress"></div></div>
+        <button onclick="shareResults()">Share Results</button>
     </div>
+    
     <div class="social-icons">
-        <a href="#">🔵</a>
-        <a href="#">🐦</a>
-        <a href="#">📸</a>
+        <a href="#" target="_blank">&#x1F426;</a> <!-- Twitter Icon -->
+        <a href="#" target="_blank">&#x1F4F1;</a> <!-- Telegram Icon -->
+        <a href="#" target="_blank">&#x1F517;</a> <!-- Link Icon -->
     </div>
-    <script src="script.js"></script>
+    
+    <script>
+        async function getISP() {
+            try {
+                const response = await fetch("https://ipapi.co/json/");
+                const data = await response.json();
+                document.getElementById("isp").innerText = `ISP: ${data.org || 'Unknown'} | IP: ${data.ip}`;
+                document.getElementById("country").innerText = `Country: ${data.country_name || 'Unknown'}`;
+            } catch (error) {
+                document.getElementById("isp").innerText = "ISP Info Not Available";
+                document.getElementById("country").innerText = "Country Info Not Available";
+            }
+        }
+        
+        async function startTest() {
+            document.getElementById("result").innerText = "Testing...";
+            const progressBar = document.getElementById("progress");
+            progressBar.style.width = "50%";
+            
+            const response = await fetch("https://librespeed.org/api.php");
+            const data = await response.json();
+            
+            progressBar.style.width = "100%";
+            document.getElementById("result").innerText = `Download: ${data.download} Mbps\nUpload: ${data.upload} Mbps\nPing: ${data.ping} ms\nLatency: ${data.latency} ms`;
+        }
+        
+        function shareResults() {
+            const results = document.getElementById("result").innerText;
+            navigator.share({ title: "Speed Test Results", text: results });
+        }
+        
+        getISP();
+    </script>
 </body>
 </html>
