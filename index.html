@@ -48,7 +48,11 @@
         btn.disabled = true;
         btn.innerText = 'Testing...';
         
-        fetch('https://librespeed.org/api.php?server=1')
+        fetch('https://speed.librespeed.org/api.php', {
+            method: 'POST',
+            body: JSON.stringify({ download: true, upload: true, ping: true }),
+            headers: { 'Content-Type': 'application/json' }
+        })
             .then(response => response.json())
             .then(data => {
                 document.getElementById('results').innerHTML = 
