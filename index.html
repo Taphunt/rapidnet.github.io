@@ -1,74 +1,136 @@
 <!DOCTYPE html><html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Speed Test</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            background: #f4f4f4;
-            margin: 0;
-            padding: 20px;
-        }
-        .container {
-            background: #fff;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            max-width: 400px;
-            margin: auto;
-        }
-        button {
-            background: #007BFF;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            font-size: 18px;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        button:disabled {
-            background: #ccc;
-        }
-        .result {
-            margin-top: 20px;
-            font-size: 20px;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Currency Converter</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(to right, #0f2027, #203a43, #2c5364);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+    .container {
+      background: white;
+      padding: 25px;
+      border-radius: 15px;
+      box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+      text-align: center;
+      width: 90%;
+      max-width: 400px;
+      animation: fadeIn 0.5s ease-in-out;
+    }
+    .currency-select {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    .currency-select select {
+      flex: 1;
+      padding: 10px;
+      border-radius: 8px;
+      font-size: 16px;
+    }
+    input, button {
+      width: 100%;
+      margin-top: 15px;
+      padding: 12px;
+      font-size: 16px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+    button {
+      background-color: #007bff;
+      color: white;
+      border: none;
+      font-weight: bold;
+      transition: background-color 0.3s ease, transform 0.2s ease;
+    }
+    button:hover {
+      background-color: #0056b3;
+      transform: scale(1.05);
+    }
+    .result {
+      margin-top: 20px;
+      font-size: 20px;
+      font-weight: bold;
+      color: #333;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <h2>Internet Speed Test</h2>
-        <button id="startTest">Start Test</button>
-        <div class="result" id="results">Download: -- Mbps <br> Upload: -- Mbps <br> Ping: -- ms</div>
-    </div><script>
-    document.getElementById('startTest').addEventListener('click', function() {
-        const btn = this;
-        btn.disabled = true;
-        btn.innerText = 'Testing...';
-        
-        fetch('https://speed.librespeed.org/api.php', {
-            method: 'POST',
-            body: JSON.stringify({ download: true, upload: true, ping: true }),
-            headers: { 'Content-Type': 'application/json' }
-        })
-            .then(response => response.json())
-            .then(data => {
-                document.getElementById('results').innerHTML = 
-                    `Download: ${data.download.toFixed(2)} Mbps <br>` +
-                    `Upload: ${data.upload.toFixed(2)} Mbps <br>` +
-                    `Ping: ${data.ping} ms`;
-                btn.innerText = 'Start Test';
-                btn.disabled = false;
-            })
-            .catch(error => {
-                document.getElementById('results').innerHTML = 'Error running speed test';
-                btn.innerText = 'Start Test';
-                btn.disabled = false;
-            });
-    });
-</script>
+  <div class="container">
+    <h2>Currency Converter</h2>
+    <input type="number" id="amount" placeholder="Enter amount" value="1" />
+    <div class="currency-select">
+      <select id="fromCurrency"></select>
+      <select id="toCurrency"></select>
+    </div>
+    <button onclick="convertCurrency()">Convert</button>
+    <div class="result" id="result"></div>
+  </div>  <script>
+    const apiKey = "YOUR_API_KEY";
+    const apiUrl = `https://v6.exchangerate-api.com/v6/${apiKey}/latest/USD`;
 
-</body>
+    let currencies = [];
+    fetch(apiUrl)
+      .then((response) => response.json())
+      .then((data) => {
+        currencies = Object.keys(data.conversion_rates);
+        populateSelect("fromCurrency", currencies, "USD");
+        populateSelect("toCurrency", currencies, "LKR");
+      })
+      .catch((error) => console.error("Error fetching data:", error));
+
+    function populateSelect(id, currencies, defaultCurrency) {
+      const select = document.getElementById(id);
+      select.innerHTML = "";
+      currencies.forEach((currency) => {
+        const option = document.createElement("option");
+        option.value = currency;
+        option.textContent = currency + " " + getFlagEmoji(currency);
+        if (currency === defaultCurrency) option.selected = true;
+        select.appendChild(option);
+      });
+    }
+
+    function convertCurrency() {
+      const amount = document.getElementById("amount").value;
+      const fromCurrency = document.getElementById("fromCurrency").value;
+      const toCurrency = document.getElementById("toCurrency").value;
+
+      fetch(`https://v6.exchangerate-api.com/v6/${apiKey}/latest/${fromCurrency}`)
+        .then((response) => response.json())
+        .then((data) => {
+          const rate = data.conversion_rates[toCurrency];
+          const convertedAmount = (amount * rate).toFixed(2);
+          document.getElementById("result").innerText = `${amount} ${fromCurrency} = ${convertedAmount} ${toCurrency}`;
+        })
+        .catch((error) => console.error("Error fetching conversion rate:", error));
+    }
+
+    function getFlagEmoji(currencyCode) {
+      const countryCode = currencyToCountry[currencyCode];
+      if (!countryCode) return "";
+      return countryCode.replace(/./g, (char) =>
+        String.fromCodePoint(char.charCodeAt(0) + 127397)
+      );
+    }
+
+    const currencyToCountry = {
+      USD: "US", LKR: "LK", EUR: "EU", GBP: "GB", INR: "IN", AUD: "AU",
+      CAD: "CA", JPY: "JP", CNY: "CN", RUB: "RU", CHF: "CH", SEK: "SE",
+      NOK: "NO", NZD: "NZ", ZAR: "ZA", SAR: "SA", AED: "AE", BDT: "BD"
+      // Add more currency-country pairs as needed
+    };
+  </script></body>
 </html>
