@@ -8,69 +8,98 @@
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       background: linear-gradient(to right, #0f2027, #203a43, #2c5364);
+      margin: 0;
+      overflow: hidden;
+    }
+    .preloader {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: #0f2027;
       display: flex;
       justify-content: center;
       align-items: center;
-      height: 100vh;
-      margin: 0;
+      z-index: 9999;
+      transition: opacity 0.5s ease;
     }
-    .container {
-      background: white;
-      padding: 25px;
-      border-radius: 30px;
-      box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
-      text-align: center;
-      width: 90%;
-      max-width: 400px;
-      animation: fadeIn 0.5s ease-in-out;
+    .preloader.hidden {
+      opacity: 0;
+      pointer-events: none;
     }
-    .currency-select {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
+    .loader {
+      border: 6px solid #f3f3f3;
+      border-top: 6px solid #3498db;
+      border-radius: 50%;
+      width: 60px;
+      height: 60px;
+      animation: spin 1s linear infinite;
     }
-    .currency-select select {
-      flex: 1;
-      padding: 10px;
-      border-radius: 8px;
-      font-size: 16px;
-    }
-    input, button {
-      width: 80%;
-      margin-top: 15px;
-      padding: 12px;
-      font-size: 16px;
-      border-radius: 15px;
-      border: 1px solid #ccc;
-    }
-    button {
-      background-color: #007bff;
-      color: white;
-      border: none;
-      font-weight: bold;
-      transition: background-color 0.3s ease, transform 0.2s ease;
-    }
-    button:hover {
-      background-color: #0056b3;
-      transform: scale(1.05);
-    }
-    .result {
-      margin-top: 20px;
-      font-size: 20px;
-      font-weight: bold;
-      color: #333;
-    }
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }.container {
+  background: white;
+  padding: 25px;
+  border-radius: 15px;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+  text-align: center;
+  width: 90%;
+  max-width: 400px;
+  margin: 100px auto;
+  animation: fadeIn 0.5s ease-in-out;
+}
+.currency-select {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.currency-select select {
+  flex: 1;
+  padding: 10px;
+  border-radius: 8px;
+  font-size: 16px;
+}
+input, button {
+  width: 100%;
+  margin-top: 15px;
+  padding: 12px;
+  font-size: 16px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+}
+button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  font-weight: bold;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+button:hover {
+  background-color: #0056b3;
+  transform: scale(1.05);
+}
+.result {
+  margin-top: 20px;
+  font-size: 20px;
+  font-weight: bold;
+  color: #333;
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
   </style>
 </head>
 <body>
-  <div class="container">
+  <div class="preloader" id="preloader">
+    <div class="loader"></div>
+  </div>  <div class="container">
     <h2>Currency Converter</h2>
-   <div> <input type="number" id="amount" placeholder="Enter amount" value="1" /></div>
+    <input type="number" id="amount" placeholder="Enter amount" value="1" />
     <div class="currency-select">
       <select id="fromCurrency"></select>
       <select id="toCurrency"></select>
@@ -78,7 +107,7 @@
     <button onclick="convertCurrency()">Convert</button>
     <div class="result" id="result"></div>
   </div>  <script>
-    const apiKey = "2a63b10b9c15cfdb80467a6d";
+    const apiKey = "YOUR_API_KEY";
     const apiUrl = `https://v6.exchangerate-api.com/v6/${apiKey}/latest/USD`;
 
     let currencies = [];
@@ -88,6 +117,8 @@
         currencies = Object.keys(data.conversion_rates);
         populateSelect("fromCurrency", currencies, "USD");
         populateSelect("toCurrency", currencies, "LKR");
+        document.getElementById("preloader").classList.add("hidden");
+        document.body.style.overflow = "auto";
       })
       .catch((error) => console.error("Error fetching data:", error));
 
